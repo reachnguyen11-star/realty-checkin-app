@@ -1,0 +1,230 @@
+import React, { useState, useEffect } from 'react';
+import ImageCapture from './ImageCapture';
+import apiService from '../services/api';
+
+const CheckInForm = ({ onSuccess }) => {
+  const [formData, setFormData] = useState({
+    saleName: localStorage.getItem('saleName') || '',
+    customerName: '',
+    customerPhone: '',
+    location: '',
+    notes: '',
+    checkInType: 'meeting'
+  });
+
+  const [image, setImage] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Get current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    }
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleImageCapture = (file) => {
+    setImage(file);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!formData.saleName || !formData.customerName) {
+      setError('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    if (!image) {
+      setError('Vui lòng chụp/chọn hình ảnh đối soát');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Upload image first
+      const uploadResult = await apiService.uploadImage(image);
+
+      if (!uploadResult.success) {
+        throw new Error('Không thể tải ảnh lên');
+      }
+
+      // Create check-in with image URL
+      const checkInData = {
+        ...formData,
+        imageUrl: uploadResult.imageUrl,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      };
+
+      const result = await apiService.createCheckIn(checkInData);
+
+      if (result.success) {
+        // Save sale name for next time
+        localStorage.setItem('saleName', formData.saleName);
+
+        // Reset form
+        setFormData({
+          saleName: formData.saleName,
+          customerName: '',
+          customerPhone: '',
+          location: '',
+          notes: '',
+          checkInType: 'meeting'
+        });
+        setImage(null);
+
+        // Show success message
+        alert('✅ Check-in thành công!');
+
+        // Call success callback
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      setError(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">📝 Check-in Gặp Khách</h2>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="label">Tên Sale *</label>
+          <input
+            type="text"
+            name="saleName"
+            value={formData.saleName}
+            onChange={handleInputChange}
+            className="input"
+            placeholder="Nguyễn Văn A"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="label">Tên Khách Hàng *</label>
+          <input
+            type="text"
+            name="customerName"
+            value={formData.customerName}
+            onChange={handleInputChange}
+            className="input"
+            placeholder="Trần Thị B"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="label">Số Điện Thoại</label>
+          <input
+            type="tel"
+            name="customerPhone"
+            value={formData.customerPhone}
+            onChange={handleInputChange}
+            className="input"
+            placeholder="0901234567"
+          />
+        </div>
+
+        <div>
+          <label className="label">Loại Check-in</label>
+          <select
+            name="checkInType"
+            value={formData.checkInType}
+            onChange={handleInputChange}
+            className="input"
+          >
+            <option value="meeting">Gặp khách hàng</option>
+            <option value="site_visit">Đi xem dự án</option>
+            <option value="contract">Ký hợp đồng</option>
+            <option value="consultation">Tư vấn</option>
+            <option value="other">Khác</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="label">Địa Điểm</label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            className="input"
+            placeholder="Quận 1, TP.HCM"
+          />
+          {location && (
+            <p className="text-xs text-gray-500 mt-1">
+              📍 GPS: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="label">Ghi Chú</label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
+            className="input"
+            rows="3"
+            placeholder="Ghi chú về cuộc gặp..."
+          />
+        </div>
+
+        <ImageCapture onImageCapture={handleImageCapture} />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full btn btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <span className="spinner mr-2"></span>
+              Đang xử lý...
+            </span>
+          ) : (
+            '✅ Hoàn Tất Check-in'
+          )}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default CheckInForm;

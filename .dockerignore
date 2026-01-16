@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.DS_Store
+.env
+.env.local
+dist
+build
+*.log
+.firebase
+firebase-service-account.json
+.vscode
+.idea
