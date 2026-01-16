@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ImageCapture from './ImageCapture';
 import apiService from '../services/api';
 
@@ -6,33 +6,14 @@ const CheckInForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     saleName: localStorage.getItem('saleName') || '',
     customerName: '',
-    customerPhone: '',
     location: '',
-    notes: '',
-    checkInType: 'meeting'
+    notes: ''
   });
 
   const [image, setImage] = useState(null);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    // Get current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    }
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -46,6 +27,10 @@ const CheckInForm = ({ onSuccess }) => {
     setImage(file);
   };
 
+  const handleLocationCapture = (loc) => {
+    setLocation(loc);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -57,7 +42,7 @@ const CheckInForm = ({ onSuccess }) => {
     }
 
     if (!image) {
-      setError('Vui lòng chụp/chọn hình ảnh đối soát');
+      setError('Vui lòng chụp hình ảnh đối soát');
       return;
     }
 
@@ -77,6 +62,7 @@ const CheckInForm = ({ onSuccess }) => {
         imageUrl: uploadResult.imageUrl,
         latitude: location?.latitude,
         longitude: location?.longitude,
+        checkInType: 'meeting' // Default type
       };
 
       const result = await apiService.createCheckIn(checkInData);
@@ -89,12 +75,11 @@ const CheckInForm = ({ onSuccess }) => {
         setFormData({
           saleName: formData.saleName,
           customerName: '',
-          customerPhone: '',
           location: '',
-          notes: '',
-          checkInType: 'meeting'
+          notes: ''
         });
         setImage(null);
+        setLocation(null);
 
         // Show success message
         alert('✅ Check-in thành công!');
@@ -150,34 +135,6 @@ const CheckInForm = ({ onSuccess }) => {
         </div>
 
         <div>
-          <label className="label">Số Điện Thoại</label>
-          <input
-            type="tel"
-            name="customerPhone"
-            value={formData.customerPhone}
-            onChange={handleInputChange}
-            className="input"
-            placeholder="0901234567"
-          />
-        </div>
-
-        <div>
-          <label className="label">Loại Check-in</label>
-          <select
-            name="checkInType"
-            value={formData.checkInType}
-            onChange={handleInputChange}
-            className="input"
-          >
-            <option value="meeting">Gặp khách hàng</option>
-            <option value="site_visit">Đi xem dự án</option>
-            <option value="contract">Ký hợp đồng</option>
-            <option value="consultation">Tư vấn</option>
-            <option value="other">Khác</option>
-          </select>
-        </div>
-
-        <div>
           <label className="label">Địa Điểm</label>
           <input
             type="text"
@@ -206,7 +163,10 @@ const CheckInForm = ({ onSuccess }) => {
           />
         </div>
 
-        <ImageCapture onImageCapture={handleImageCapture} />
+        <ImageCapture
+          onImageCapture={handleImageCapture}
+          onLocationCapture={handleLocationCapture}
+        />
 
         <button
           type="submit"
