@@ -4,6 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const admin = require('firebase-admin');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -12,6 +13,9 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from frontend build
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize Firebase Admin
 let db, bucket;
@@ -291,6 +295,11 @@ app.get('/api/stats', async (req, res) => {
       details: error.message
     });
   }
+});
+
+// Serve frontend for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware
