@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CheckInForm from './components/CheckInForm';
-import Dashboard from './components/Dashboard';
+import History from './components/History';
+import Reports from './components/Reports';
 import './index.css';
 
 function App() {
@@ -43,14 +44,24 @@ function App() {
               📝 Check-in
             </button>
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => setActiveTab('history')}
               className={`px-6 py-4 font-medium border-b-2 transition-colors ${
-                activeTab === 'dashboard'
+                activeTab === 'history'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
               }`}
             >
-              📊 Báo Cáo
+              📜 Lịch sử
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors ${
+                activeTab === 'reports'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📊 Thống kê
             </button>
           </div>
         </div>
@@ -61,12 +72,13 @@ function App() {
         {activeTab === 'checkin' && (
           <CheckInForm
             onSuccess={() => {
-              // Auto switch to dashboard after successful check-in
-              setTimeout(() => setActiveTab('dashboard'), 1500);
+              // Auto switch to history after successful check-in
+              setTimeout(() => setActiveTab('history'), 1500);
             }}
           />
         )}
-        {activeTab === 'dashboard' && <Dashboard />}
+        {activeTab === 'history' && <History />}
+        {activeTab === 'reports' && <Reports />}
       </main>
 
       {/* Footer */}
