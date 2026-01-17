@@ -4,6 +4,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
   const [preview, setPreview] = useState(existingImage || null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState('');
   const [locationError, setLocationError] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -30,7 +31,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
   const getLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const loc = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -38,8 +39,20 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
           };
           setLocation(loc);
           setLocationError('');
-          if (onLocationCapture) {
-            onLocationCapture(loc);
+
+          // Reverse geocoding to get address
+          try {
+            const addr = await reverseGeocode(loc.latitude, loc.longitude);
+            setAddress(addr);
+            if (onLocationCapture) {
+              onLocationCapture({ ...loc, address: addr });
+            }
+          } catch (error) {
+            console.error('Geocoding error:', error);
+            setAddress(`${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}`);
+            if (onLocationCapture) {
+              onLocationCapture(loc);
+            }
           }
         },
         (error) => {
@@ -52,6 +65,40 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
           maximumAge: 0
         }
       );
+    }
+  };
+
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      // Using OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'vi'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Geocoding failed');
+      }
+
+      const data = await response.json();
+
+      // Build address from components
+      const addr = data.address;
+      const parts = [];
+
+      if (addr.road || addr.street) parts.push(addr.road || addr.street);
+      if (addr.quarter || addr.suburb) parts.push(addr.quarter || addr.suburb);
+      if (addr.city_district || addr.district) parts.push(addr.city_district || addr.district);
+      if (addr.city || addr.province) parts.push(addr.city || addr.province);
+
+      return parts.length > 0 ? parts.join(', ') : data.display_name;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     }
   };
 
@@ -93,10 +140,6 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
     });
   };
 
-  const formatCoordinates = (lat, lng) => {
-    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-  };
-
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -110,8 +153,9 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
       ctx.drawImage(video, 0, 0);
 
       // Draw overlay with timestamp and location (Timemark style)
-      const overlayHeight = 80;
+      const overlayHeight = 100;
       const padding = 20;
+      const fontSize = Math.max(32, canvas.width / 40);
 
       // Semi-transparent background
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -119,15 +163,34 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
 
       // Date and time
       ctx.fillStyle = '#FFD700'; // Gold color
-      ctx.font = 'bold 32px Arial';
-      ctx.fillText(formatDateTime(currentTime), padding, canvas.height - overlayHeight + 35);
+      ctx.font = `bold ${fontSize}px Arial`;
+      ctx.fillText(formatDateTime(currentTime), padding, canvas.height - overlayHeight + fontSize + 10);
 
-      // Location
-      if (location) {
+      // Location/Address
+      if (address || location) {
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '24px Arial';
-        const locationText = `📍 ${formatCoordinates(location.latitude, location.longitude)}`;
-        ctx.fillText(locationText, padding, canvas.height - overlayHeight + 65);
+        ctx.font = `${fontSize * 0.7}px Arial`;
+        const locationText = `📍 ${address || 'Đang lấy địa chỉ...'}`;
+
+        // Word wrap for long addresses
+        const maxWidth = canvas.width - (padding * 2);
+        const words = locationText.split(' ');
+        let line = '';
+        let y = canvas.height - overlayHeight + fontSize + 45;
+
+        for (let word of words) {
+          const testLine = line + word + ' ';
+          const metrics = ctx.measureText(testLine);
+
+          if (metrics.width > maxWidth && line !== '') {
+            ctx.fillText(line, padding, y);
+            line = word + ' ';
+            y += fontSize * 0.8;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, padding, y);
       }
 
       canvas.toBlob((blob) => {
@@ -189,9 +252,9 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
           <div className="text-gold font-bold text-lg">
             {formatDateTime(currentTime)}
           </div>
-          {location ? (
+          {address || location ? (
             <div className="text-sm mt-1">
-              📍 {formatCoordinates(location.latitude, location.longitude)}
+              📍 {address || 'Đang lấy địa chỉ...'}
             </div>
           ) : (
             <div className="text-sm mt-1 text-yellow-300">
@@ -199,15 +262,18 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
             </div>
           )}
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={capturePhoto}
-        className="w-full btn btn-primary text-lg py-4"
-      >
-        📸 Chụp Ảnh
-      </button>
+        {/* iPhone-style capture button */}
+        <div className="absolute bottom-0 left-0 right-0 pb-24 flex justify-center">
+          <button
+            type="button"
+            onClick={capturePhoto}
+            className="w-20 h-20 bg-white rounded-full border-4 border-gray-300 hover:border-gold transition-all duration-200 flex items-center justify-center shadow-lg active:scale-95"
+          >
+            <div className="w-16 h-16 bg-white rounded-full"></div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

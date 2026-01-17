@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ImageCapture from './ImageCapture';
 import apiService from '../services/api';
 
@@ -6,12 +6,11 @@ const CheckInForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     saleName: localStorage.getItem('saleName') || '',
     customerName: '',
-    location: '',
     notes: ''
   });
 
   const [image, setImage] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [locationData, setLocationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,7 +27,7 @@ const CheckInForm = ({ onSuccess }) => {
   };
 
   const handleLocationCapture = (loc) => {
-    setLocation(loc);
+    setLocationData(loc);
   };
 
   const handleSubmit = async (e) => {
@@ -56,13 +55,16 @@ const CheckInForm = ({ onSuccess }) => {
         throw new Error('Không thể tải ảnh lên');
       }
 
-      // Create check-in with image URL
+      // Create check-in with image URL and location
       const checkInData = {
-        ...formData,
+        saleName: formData.saleName,
+        customerName: formData.customerName,
+        notes: formData.notes,
         imageUrl: uploadResult.imageUrl,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
-        checkInType: 'meeting' // Default type
+        latitude: locationData?.latitude,
+        longitude: locationData?.longitude,
+        location: locationData?.address || '',
+        checkInType: 'meeting'
       };
 
       const result = await apiService.createCheckIn(checkInData);
@@ -75,11 +77,10 @@ const CheckInForm = ({ onSuccess }) => {
         setFormData({
           saleName: formData.saleName,
           customerName: '',
-          location: '',
           notes: ''
         });
         setImage(null);
-        setLocation(null);
+        setLocationData(null);
 
         // Show success message
         alert('✅ Check-in thành công!');
@@ -135,23 +136,6 @@ const CheckInForm = ({ onSuccess }) => {
         </div>
 
         <div>
-          <label className="label">Địa Điểm</label>
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleInputChange}
-            className="input"
-            placeholder="Quận 1, TP.HCM"
-          />
-          {location && (
-            <p className="text-xs text-gray-500 mt-1">
-              📍 GPS: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-            </p>
-          )}
-        </div>
-
-        <div>
           <label className="label">Ghi Chú</label>
           <textarea
             name="notes"
@@ -167,6 +151,14 @@ const CheckInForm = ({ onSuccess }) => {
           onImageCapture={handleImageCapture}
           onLocationCapture={handleLocationCapture}
         />
+
+        {locationData?.address && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">📍 Vị trí:</span> {locationData.address}
+            </p>
+          </div>
+        )}
 
         <button
           type="submit"
