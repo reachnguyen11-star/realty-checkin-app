@@ -2,11 +2,18 @@ import { useState } from 'react';
 import ImageCapture from './ImageCapture';
 import apiService from '../services/api';
 
+const PROJECTS = [
+  'Blanca City',
+  'Charmora City',
+  'Sunwah Pearl',
+  'The Gió'
+];
+
 const CheckInForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     saleName: localStorage.getItem('saleName') || '',
     customerName: '',
-    notes: ''
+    project: ''
   });
 
   const [image, setImage] = useState(null);
@@ -40,6 +47,11 @@ const CheckInForm = ({ onSuccess }) => {
       return;
     }
 
+    if (!formData.project) {
+      setError('Vui lòng chọn dự án');
+      return;
+    }
+
     if (!image) {
       setError('Vui lòng chụp hình ảnh đối soát');
       return;
@@ -59,7 +71,8 @@ const CheckInForm = ({ onSuccess }) => {
       const checkInData = {
         saleName: formData.saleName,
         customerName: formData.customerName,
-        notes: formData.notes,
+        notes: formData.project, // Store project in notes field
+        project: formData.project,
         imageUrl: uploadResult.imageUrl,
         latitude: locationData?.latitude,
         longitude: locationData?.longitude,
@@ -77,7 +90,7 @@ const CheckInForm = ({ onSuccess }) => {
         setFormData({
           saleName: formData.saleName,
           customerName: '',
-          notes: ''
+          project: ''
         });
         setImage(null);
         setLocationData(null);
@@ -136,15 +149,21 @@ const CheckInForm = ({ onSuccess }) => {
         </div>
 
         <div>
-          <label className="label">Ghi Chú</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
+          <label className="label">Dự Án *</label>
+          <select
+            name="project"
+            value={formData.project}
             onChange={handleInputChange}
             className="input"
-            rows="3"
-            placeholder="Ghi chú về cuộc gặp..."
-          />
+            required
+          >
+            <option value="">Chọn dự án</option>
+            {PROJECTS.map(project => (
+              <option key={project} value={project}>
+                {project}
+              </option>
+            ))}
+          </select>
         </div>
 
         <ImageCapture

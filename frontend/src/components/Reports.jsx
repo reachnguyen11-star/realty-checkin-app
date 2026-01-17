@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
 import apiService from '../services/api';
 
+const PROJECTS = [
+  'Blanca City',
+  'Charmora City',
+  'Sunwah Pearl',
+  'The Gió'
+];
+
 const Reports = () => {
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedProject, setSelectedProject] = useState('all');
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -35,7 +43,11 @@ const Reports = () => {
     const start = new Date(dateRange.startDate);
     const end = new Date(dateRange.endDate);
     end.setHours(23, 59, 59, 999);
-    return checkinDate >= start && checkinDate <= end;
+
+    const dateMatch = checkinDate >= start && checkinDate <= end;
+    const projectMatch = selectedProject === 'all' || checkin.notes === selectedProject || checkin.project === selectedProject;
+
+    return dateMatch && projectMatch;
   });
 
   const dailyStats = filteredCheckins.reduce((acc, checkin) => {
@@ -229,27 +241,48 @@ const Reports = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold text-gray-800">📊 Thống Kê & Báo Cáo</h2>
 
-      {/* Date Range Button */}
+      {/* Filters */}
       <div className="card">
-        <button
-          type="button"
-          onClick={() => {
-            setTempDateRange(dateRange);
-            setSelectingStart(true);
-            setShowCalendar(true);
-          }}
-          className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 hover:border-primary transition-all text-left"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Khoảng thời gian</div>
-              <div className="font-bold text-gray-800">
-                {formatDateDisplay(dateRange.startDate)} - {formatDateDisplay(dateRange.endDate)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Date Range Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setTempDateRange(dateRange);
+              setSelectingStart(true);
+              setShowCalendar(true);
+            }}
+            className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 hover:border-primary transition-all text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Khoảng thời gian</div>
+                <div className="font-bold text-gray-800">
+                  {formatDateDisplay(dateRange.startDate)} - {formatDateDisplay(dateRange.endDate)}
+                </div>
               </div>
+              <div className="text-primary text-xl">📅</div>
             </div>
-            <div className="text-primary text-xl">📅</div>
+          </button>
+
+          {/* Project Filter */}
+          <div className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-200">
+            <label className="text-sm text-gray-500 mb-1 block">Dự án</label>
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="w-full bg-transparent border-none outline-none font-bold text-gray-800 cursor-pointer"
+            >
+              <option value="all">Tất cả dự án</option>
+              {PROJECTS.map(project => (
+                <option key={project} value={project}>
+                  {project}
+                </option>
+              ))}
+            </select>
           </div>
-        </button>
+        </div>
+
         <p className="text-sm text-gray-600 mt-3">
           Tổng số check-in: <span className="font-bold text-primary">{filteredCheckins.length}</span>
         </p>
