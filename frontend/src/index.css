@@ -14,7 +14,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6;
+  background-color: #f5f5f7;
 }
 
 #root {
@@ -55,33 +55,33 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* Button styles */
+/* Button styles - iPhone style */
 .btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm;
 }
 
 .btn-primary {
-  @apply bg-primary text-white hover:bg-secondary;
+  @apply bg-primary text-white hover:bg-secondary hover:shadow-md active:scale-95;
 }
 
 .btn-secondary {
-  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+  @apply bg-gray-100 text-gray-800 hover:bg-gray-200 active:scale-95;
 }
 
 .btn-danger {
-  @apply bg-red-500 text-white hover:bg-red-600;
+  @apply bg-red-500 text-white hover:bg-red-600 hover:shadow-md active:scale-95;
 }
 
-/* Card styles */
+/* Card styles - iPhone style */
 .card {
-  @apply bg-white rounded-lg shadow-md p-6;
+  @apply bg-white rounded-2xl shadow-sm p-6 border border-gray-100;
 }
 
-/* Input styles */
+/* Input styles - iPhone style */
 .input {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary;
+  @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all;
 }
 
 .label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-sm font-semibold text-gray-700 mb-2;
 }

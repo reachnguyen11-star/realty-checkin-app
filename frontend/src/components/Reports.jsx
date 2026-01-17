@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import apiService from '../services/api';
 
 const Reports = () => {
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
+  const [tempDateRange, setTempDateRange] = useState({ ...dateRange });
+  const [selectingStart, setSelectingStart] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -27,7 +30,6 @@ const Reports = () => {
     }
   };
 
-  // Filter checkins by date range
   const filteredCheckins = checkins.filter(checkin => {
     const checkinDate = checkin.timestamp?.toDate?.() || new Date(checkin.createdAt);
     const start = new Date(dateRange.startDate);
@@ -36,7 +38,6 @@ const Reports = () => {
     return checkinDate >= start && checkinDate <= end;
   });
 
-  // Group by date
   const dailyStats = filteredCheckins.reduce((acc, checkin) => {
     const date = (checkin.timestamp?.toDate?.() || new Date(checkin.createdAt))
       .toISOString().split('T')[0];
@@ -44,11 +45,9 @@ const Reports = () => {
     return acc;
   }, {});
 
-  // Sort dates
   const sortedDates = Object.keys(dailyStats).sort();
   const maxCount = Math.max(...Object.values(dailyStats), 0);
 
-  // Top 10 sales
   const salesStats = filteredCheckins.reduce((acc, checkin) => {
     const name = checkin.saleName;
     acc[name] = (acc[name] || 0) + 1;
@@ -58,6 +57,165 @@ const Reports = () => {
   const top10Sales = Object.entries(salesStats)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
+
+  const handleDateSelect = (date) => {
+    if (selectingStart) {
+      setTempDateRange({ ...tempDateRange, startDate: date });
+      setSelectingStart(false);
+    } else {
+      const start = new Date(tempDateRange.startDate);
+      const end = new Date(date);
+
+      if (end < start) {
+        setTempDateRange({ startDate: date, endDate: tempDateRange.startDate });
+      } else {
+        setTempDateRange({ ...tempDateRange, endDate: date });
+      }
+      setSelectingStart(true);
+    }
+  };
+
+  const applyDateRange = () => {
+    setDateRange(tempDateRange);
+    setShowCalendar(false);
+  };
+
+  const formatDateDisplay = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const renderCalendar = () => {
+    const today = new Date();
+    const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+    const renderMonth = (monthDate) => {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const days = [];
+      const weeks = [];
+
+      // Empty cells before first day
+      for (let i = 0; i < firstDay; i++) {
+        days.push(<div key={`empty-${i}`} className="text-center py-2"></div>);
+      }
+
+      // Days of month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const date = new Date(dateStr);
+        const isInRange = date >= new Date(tempDateRange.startDate) && date <= new Date(tempDateRange.endDate);
+        const isStart = dateStr === tempDateRange.startDate;
+        const isEnd = dateStr === tempDateRange.endDate;
+
+        days.push(
+          <button
+            key={day}
+            type="button"
+            onClick={() => handleDateSelect(dateStr)}
+            className={`text-center py-2 rounded-lg transition-all ${
+              isStart || isEnd
+                ? 'bg-primary text-white font-bold'
+                : isInRange
+                ? 'bg-gold/20 text-primary'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            {day}
+          </button>
+        );
+      }
+
+      // Split into weeks
+      while (days.length) {
+        weeks.push(days.splice(0, 7));
+      }
+
+      return (
+        <div key={monthDate.toISOString()} className="flex-1 min-w-[280px]">
+          <div className="text-center font-bold text-gray-800 mb-3">
+            Tháng {month + 1} {year}
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-xs text-gray-500 mb-2">
+            <div className="text-center">CN</div>
+            <div className="text-center">T2</div>
+            <div className="text-center">T3</div>
+            <div className="text-center">T4</div>
+            <div className="text-center">T5</div>
+            <div className="text-center">T6</div>
+            <div className="text-center">T7</div>
+          </div>
+          {weeks.map((week, i) => (
+            <div key={i} className="grid grid-cols-7 gap-1 mb-1">
+              {week}
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-3xl">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800">Chọn khoảng thời gian</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCalendar(false);
+                  setTempDateRange(dateRange);
+                  setSelectingStart(true);
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-4">
+            <div className="bg-gray-50 rounded-2xl p-4">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex-1">
+                  <div className="text-gray-500 mb-1">Từ ngày</div>
+                  <div className="font-bold text-primary">{formatDateDisplay(tempDateRange.startDate)}</div>
+                </div>
+                <div className="text-gray-400">→</div>
+                <div className="flex-1 text-right">
+                  <div className="text-gray-500 mb-1">Đến ngày</div>
+                  <div className="font-bold text-primary">{formatDateDisplay(tempDateRange.endDate)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
+              {renderMonth(currentMonth)}
+              {renderMonth(nextMonth)}
+            </div>
+
+            <div className="sticky bottom-0 bg-white pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={applyDateRange}
+                className="w-full btn btn-primary"
+              >
+                Áp dụng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   if (loading && checkins.length === 0) {
     return (
@@ -71,36 +229,28 @@ const Reports = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold text-gray-800">📊 Thống Kê & Báo Cáo</h2>
 
-      {/* Date Range Picker */}
+      {/* Date Range Button */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">Chọn khoảng thời gian</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div>
-            <label className="label">Từ ngày</label>
-            <input
-              type="date"
-              value={dateRange.startDate}
-              onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-              className="input"
-            />
+        <button
+          type="button"
+          onClick={() => {
+            setTempDateRange(dateRange);
+            setSelectingStart(true);
+            setShowCalendar(true);
+          }}
+          className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 hover:border-primary transition-all text-left"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-gray-500 mb-1">Khoảng thời gian</div>
+              <div className="font-bold text-gray-800">
+                {formatDateDisplay(dateRange.startDate)} - {formatDateDisplay(dateRange.endDate)}
+              </div>
+            </div>
+            <div className="text-primary text-xl">📅</div>
           </div>
-          <div>
-            <label className="label">Đến ngày</label>
-            <input
-              type="date"
-              value={dateRange.endDate}
-              onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-              className="input"
-            />
-          </div>
-          <button
-            onClick={fetchData}
-            className="btn btn-primary"
-          >
-            🔄 Cập nhật
-          </button>
-        </div>
-        <p className="text-sm text-gray-600 mt-2">
+        </button>
+        <p className="text-sm text-gray-600 mt-3">
           Tổng số check-in: <span className="font-bold text-primary">{filteredCheckins.length}</span>
         </p>
       </div>
@@ -127,9 +277,9 @@ const Reports = () => {
                   <div className="w-32 text-sm text-gray-700 font-medium">
                     {formattedDate}
                   </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-8 relative">
+                  <div className="flex-1 bg-gray-100 rounded-full h-10 relative overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-primary to-gold h-8 rounded-full flex items-center justify-end px-3 transition-all duration-300"
+                      className="bg-gradient-to-r from-primary to-gold h-10 rounded-full flex items-center justify-end px-3 transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     >
                       <span className="text-white text-sm font-bold">{count}</span>
@@ -159,9 +309,9 @@ const Reports = () => {
                 <div key={name} className="flex items-center gap-3">
                   <div className="text-2xl w-10">{medal}</div>
                   <div className="w-40 font-medium text-gray-800">{name}</div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-10 relative">
+                  <div className="flex-1 bg-gray-100 rounded-full h-12 relative overflow-hidden">
                     <div
-                      className={`h-10 rounded-full flex items-center justify-end px-4 transition-all duration-300 ${
+                      className={`h-12 rounded-full flex items-center justify-end px-4 transition-all duration-500 ${
                         index === 0
                           ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
                           : index === 1
@@ -183,6 +333,8 @@ const Reports = () => {
           </div>
         )}
       </div>
+
+      {showCalendar && renderCalendar()}
     </div>
   );
 };
