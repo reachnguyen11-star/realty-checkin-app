@@ -70,15 +70,22 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
 
   const reverseGeocode = async (lat, lng) => {
     try {
-      // Using OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
+      // Using OpenStreetMap Nominatim for reverse geocoding with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
           headers: {
-            'Accept-Language': 'vi'
-          }
+            'Accept-Language': 'vi',
+            'User-Agent': 'NamAnRealtyCheckIn/1.0'
+          },
+          signal: controller.signal
         }
       );
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Geocoding failed');
@@ -98,6 +105,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
       return parts.length > 0 ? parts.join(', ') : data.display_name;
     } catch (error) {
       console.error('Reverse geocoding error:', error);
+      // Fallback to coordinates if geocoding fails
       return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     }
   };

@@ -61,10 +61,12 @@ const CheckInForm = ({ onSuccess }) => {
 
     try {
       // Upload image first
+      console.log('Starting image upload...');
       const uploadResult = await apiService.uploadImage(image);
+      console.log('Upload result:', uploadResult);
 
       if (!uploadResult.success) {
-        throw new Error('Không thể tải ảnh lên');
+        throw new Error(uploadResult.error || 'Không thể tải ảnh lên');
       }
 
       // Create check-in with image URL and location
@@ -80,7 +82,9 @@ const CheckInForm = ({ onSuccess }) => {
         checkInType: 'meeting'
       };
 
+      console.log('Creating check-in with data:', checkInData);
       const result = await apiService.createCheckIn(checkInData);
+      console.log('Check-in result:', result);
 
       if (result.success) {
         // Save sale name for next time
@@ -102,6 +106,8 @@ const CheckInForm = ({ onSuccess }) => {
         if (onSuccess) {
           onSuccess(result);
         }
+      } else {
+        throw new Error(result.error || 'Check-in thất bại');
       }
     } catch (error) {
       console.error('Submit error:', error);
