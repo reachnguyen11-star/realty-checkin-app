@@ -20,6 +20,7 @@ const CheckInForm = ({ onSuccess }) => {
   const [locationData, setLocationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [debugInfo, setDebugInfo] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -58,12 +59,15 @@ const CheckInForm = ({ onSuccess }) => {
     }
 
     setLoading(true);
+    setDebugInfo('Bắt đầu upload...');
 
     try {
       // Upload image first
       console.log('Starting image upload...');
+      setDebugInfo('Đang upload ảnh...');
       const uploadResult = await apiService.uploadImage(image);
       console.log('Upload result:', uploadResult);
+      setDebugInfo(`Upload kết quả: ${JSON.stringify(uploadResult)}`);
 
       if (!uploadResult.success) {
         throw new Error(uploadResult.error || 'Không thể tải ảnh lên');
@@ -83,8 +87,10 @@ const CheckInForm = ({ onSuccess }) => {
       };
 
       console.log('Creating check-in with data:', checkInData);
+      setDebugInfo('Đang tạo check-in...');
       const result = await apiService.createCheckIn(checkInData);
       console.log('Check-in result:', result);
+      setDebugInfo(`Check-in kết quả: ${JSON.stringify(result)}`);
 
       if (result.success) {
         // Save sale name for next time
@@ -98,6 +104,7 @@ const CheckInForm = ({ onSuccess }) => {
         });
         setImage(null);
         setLocationData(null);
+        setDebugInfo('');
 
         // Show success message
         alert('✅ Check-in thành công!');
@@ -112,6 +119,7 @@ const CheckInForm = ({ onSuccess }) => {
     } catch (error) {
       console.error('Submit error:', error);
       setError(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      setDebugInfo(`Lỗi: ${error.message} | Stack: ${error.stack}`);
     } finally {
       setLoading(false);
     }
@@ -122,8 +130,14 @@ const CheckInForm = ({ onSuccess }) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">📝 Check-in Gặp Khách</h2>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
           {error}
+        </div>
+      )}
+
+      {debugInfo && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-xl mb-4 text-xs overflow-auto max-h-40">
+          <strong>Debug:</strong> {debugInfo}
         </div>
       )}
 
