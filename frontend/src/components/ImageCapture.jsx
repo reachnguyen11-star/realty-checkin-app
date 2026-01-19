@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
   const [preview, setPreview] = useState(existingImage || null);
@@ -6,6 +6,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
   const [locationError, setLocationError] = useState('');
+  const [cameraError, setCameraError] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -26,7 +27,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
       clearInterval(timer);
       stopCamera();
     };
-  }, []);
+  }, [preview]);
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -112,6 +113,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
 
   const startCamera = async () => {
     try {
+      setCameraError('');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'environment',
@@ -125,7 +127,7 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      alert('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập.');
+      setCameraError('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập.');
     }
   };
 
@@ -244,6 +246,19 @@ const ImageCapture = ({ onImageCapture, onLocationCapture, existingImage }) => {
   return (
     <div className="space-y-4">
       <label className="label">Hình ảnh đối soát *</label>
+
+      {cameraError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
+          {cameraError}
+          <button
+            type="button"
+            onClick={startCamera}
+            className="mt-2 w-full btn btn-secondary text-sm"
+          >
+            Thử lại
+          </button>
+        </div>
+      )}
 
       <div className="relative bg-black rounded-lg overflow-hidden">
         <video
