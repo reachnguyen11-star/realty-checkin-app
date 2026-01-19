@@ -33,10 +33,23 @@ const History = () => {
     if (!timestamp) return 'N/A';
 
     let date;
+
+    // Handle Firestore Timestamp object
     if (timestamp.seconds) {
       date = new Date(timestamp.seconds * 1000);
-    } else {
+    }
+    // Handle Firestore Timestamp serialized as object with _seconds
+    else if (timestamp._seconds) {
+      date = new Date(timestamp._seconds * 1000);
+    }
+    // Handle ISO string or regular date
+    else {
       date = new Date(timestamp);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'N/A';
     }
 
     return date.toLocaleString('vi-VN', {
