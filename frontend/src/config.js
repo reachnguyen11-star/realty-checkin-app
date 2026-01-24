@@ -11,5 +11,5 @@ export const firebaseConfig = {
 
 // API configuration
 export const API_BASE_URL = import.meta.env.PROD
-  ? 'https://realty-checkin-344648391329.asia-southeast1.run.app'
+  ? 'https://sales.namanrealty.vn'
   : 'http://localhost:8080';
