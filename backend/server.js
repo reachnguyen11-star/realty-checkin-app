@@ -298,6 +298,84 @@ app.get('/api/sales-list', async (req, res) => {
   }
 });
 
+// Employee login endpoint
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập tên đăng nhập và mật khẩu'
+      });
+    }
+
+    // Check admin login first
+    const ADMIN_PASSWORD = 'NamAn2026!';
+    if (username === 'admin' && password === ADMIN_PASSWORD) {
+      return res.json({
+        success: true,
+        data: {
+          name: 'Administrator',
+          username: 'admin',
+          role: 'admin'
+        },
+        message: 'Đăng nhập thành công'
+      });
+    }
+
+    // Fetch accounts from Google Sheets
+    const ACCOUNTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxoB-FQ6-Ldj_849_N1bgX6YMtfZk7T7Mapp8b2I5qtsnsQNy2T-Ffv-Py_vaILs4wCNzUOvO28WLt/pub?gid=1547413144&output=csv';
+
+    const response = await fetch(ACCOUNTS_CSV_URL);
+    const csvText = await response.text();
+
+    // Parse CSV
+    const lines = csvText.split('\n');
+    let userFound = null;
+
+    // Skip header row, find matching user
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const columns = line.split(',');
+      const name = columns[0]?.trim();
+      const accountUsername = columns[4]?.trim(); // Cột "Tài khoản"
+      const accountPassword = columns[5]?.trim(); // Cột "Pass"
+
+      if (accountUsername === username && accountPassword === password) {
+        userFound = {
+          name,
+          username: accountUsername,
+          role: 'employee'
+        };
+        break;
+      }
+    }
+
+    if (userFound) {
+      res.json({
+        success: true,
+        data: userFound,
+        message: 'Đăng nhập thành công'
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        error: 'Tên đăng nhập hoặc mật khẩu không đúng'
+      });
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Có lỗi xảy ra khi đăng nhập',
+      details: error.message
+    });
+  }
+});
+
 // Get statistics
 app.get('/api/stats', async (req, res) => {
   try {

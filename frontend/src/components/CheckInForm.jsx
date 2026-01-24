@@ -9,9 +9,9 @@ const PROJECTS = [
   'The Gió'
 ];
 
-const CheckInForm = ({ onSuccess }) => {
+const CheckInForm = ({ onSuccess, currentUser }) => {
   const [formData, setFormData] = useState({
-    saleName: localStorage.getItem('saleName') || '',
+    saleName: currentUser?.name || localStorage.getItem('saleName') || '',
     customerName: '',
     project: ''
   });
@@ -208,10 +208,10 @@ const CheckInForm = ({ onSuccess }) => {
             placeholder="Nguyễn Văn A"
             required
             autoComplete="off"
+            disabled={currentUser && currentUser.role !== 'admin'}
           />
 
-          {/* Autocomplete Suggestions */}
-          {showSuggestions && filteredSales.length > 0 && (
+          {!currentUser && showSuggestions && filteredSales.length > 0 && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
               {filteredSales.map((sale, index) => (
                 <div
