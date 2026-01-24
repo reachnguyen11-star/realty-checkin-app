@@ -16,14 +16,14 @@ function App() {
             <img
               src="/logo.svg"
               alt="Nam An Realty Logo"
-              className="h-12 w-12 object-contain"
+              className="h-12 w-12 object-contain flex-shrink-0"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
             />
-            <h1 className="text-2xl font-bold">
-              <span className="text-gold">Nam An Realty</span>
-              <span className="text-gray-300 text-lg ml-2">- Check-in System</span>
+            <h1 className="text-lg sm:text-2xl font-bold leading-tight">
+              <span className="text-gold whitespace-nowrap">Nam An Realty</span>
+              <span className="text-gray-300 text-sm sm:text-lg ml-1 sm:ml-2 whitespace-nowrap">- Check-in System</span>
             </h1>
           </div>
         </div>
@@ -32,10 +32,10 @@ function App() {
       {/* Navigation Tabs */}
       <nav className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-4">
+          <div className="flex gap-1 sm:gap-4">
             <button
               onClick={() => setActiveTab('checkin')}
-              className={`px-6 py-4 font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
                 activeTab === 'checkin'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
@@ -45,7 +45,7 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`px-6 py-4 font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
                 activeTab === 'history'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
@@ -55,7 +55,7 @@ function App() {
             </button>
             <button
               onClick={() => setActiveTab('reports')}
-              className={`px-6 py-4 font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
                 activeTab === 'reports'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
