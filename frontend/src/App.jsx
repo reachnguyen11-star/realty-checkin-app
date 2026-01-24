@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CheckInForm from './components/CheckInForm';
 import History from './components/History';
 import Reports from './components/Reports';
+import Admin from './components/Admin';
 import './index.css';
 
 function App() {
@@ -63,6 +64,16 @@ function App() {
             >
               📊 Thống kê
             </button>
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                activeTab === 'admin'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              🔧 Admin
+            </button>
           </div>
         </div>
       </nav>
@@ -79,6 +90,7 @@ function App() {
         )}
         {activeTab === 'history' && <History />}
         {activeTab === 'reports' && <Reports />}
+        {activeTab === 'admin' && <Admin />}
       </main>
 
       {/* Footer */}
