@@ -10,6 +10,7 @@ const PROJECTS = [
 
 const Reports = () => {
   const [checkins, setCheckins] = useState([]);
+  const [salesList, setSalesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedProject, setSelectedProject] = useState('all');
@@ -22,7 +23,19 @@ const Reports = () => {
 
   useEffect(() => {
     fetchData();
+    fetchSalesList();
   }, [dateRange]);
+
+  const fetchSalesList = async () => {
+    try {
+      const result = await apiService.getSalesList();
+      if (result.success) {
+        setSalesList(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch sales list:', error);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -363,6 +376,68 @@ const Reports = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Sales List with Days Without PSGD */}
+      <div className="card">
+        <h3 className="text-lg font-semibold mb-4">👥 Danh sách Sales - Số ngày chưa PSGD</h3>
+        {salesList.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Đang tải danh sách...</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b-2 border-gold/30">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    Tên Sale
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    Ngày cuối PSGD
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    Số ngày chưa PSGD
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    Loại
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {salesList
+                  .filter(sale => sale.name)
+                  .sort((a, b) => (b.daysWithoutPSGD || 0) - (a.daysWithoutPSGD || 0))
+                  .map((sale, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {sale.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {sale.lastPSGD || 'N/A'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {sale.daysWithoutPSGD ? (
+                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                            sale.daysWithoutPSGD > 60
+                              ? 'bg-red-100 text-red-700'
+                              : sale.daysWithoutPSGD > 30
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}>
+                            {sale.daysWithoutPSGD} ngày
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {sale.type || '-'}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
