@@ -117,6 +117,22 @@ class ApiService {
       throw error;
     }
   }
+
+  async getSalesList() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sales-list`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch sales list');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Fetch sales list error:', error);
+      throw error;
+    }
+  }
 }
 
 export default new ApiService();

@@ -250,6 +250,54 @@ app.delete('/api/checkin/:id', async (req, res) => {
   }
 });
 
+// Get sales list from Google Sheets
+app.get('/api/sales-list', async (req, res) => {
+  try {
+    const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxoB-FQ6-Ldj_849_N1bgX6YMtfZk7T7Mapp8b2I5qtsnsQNy2T-Ffv-Py_vaILs4wCNzUOvO28WLt/pub?output=csv';
+
+    // Fetch CSV data
+    const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+    const csvText = await response.text();
+
+    // Parse CSV
+    const lines = csvText.split('\n');
+    const salesList = [];
+
+    // Skip header row, process data rows
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const columns = line.split(',');
+      const name = columns[0]?.trim();
+      const lastPSGD = columns[1]?.trim();
+      const daysWithoutPSGD = columns[2]?.trim();
+      const type = columns[3]?.trim();
+
+      if (name) {
+        salesList.push({
+          name,
+          lastPSGD,
+          daysWithoutPSGD: daysWithoutPSGD ? parseInt(daysWithoutPSGD) : null,
+          type
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: salesList,
+      count: salesList.length
+    });
+  } catch (error) {
+    console.error('Sales list error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch sales list',
+      details: error.message
+    });
+  }
+});
+
 // Get statistics
 app.get('/api/stats', async (req, res) => {
   try {

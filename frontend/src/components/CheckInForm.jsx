@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImageCapture from './ImageCapture';
 import apiService from '../services/api';
 
@@ -16,11 +16,29 @@ const CheckInForm = ({ onSuccess }) => {
     project: ''
   });
 
+  const [salesList, setSalesList] = useState([]);
+  const [filteredSales, setFilteredSales] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [image, setImage] = useState(null);
   const [locationData, setLocationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [debugInfo, setDebugInfo] = useState('');
+
+  // Fetch sales list on mount
+  useEffect(() => {
+    const fetchSalesList = async () => {
+      try {
+        const result = await apiService.getSalesList();
+        if (result.success) {
+          setSalesList(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch sales list:', error);
+      }
+    };
+    fetchSalesList();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -28,7 +46,39 @@ const CheckInForm = ({ onSuccess }) => {
       ...prev,
       [name]: value
     }));
+
+    // Filter sales suggestions when typing in saleName field
+    if (name === 'saleName') {
+      if (value.trim().length > 0) {
+        const filtered = salesList.filter(sale =>
+          sale.name.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSales(filtered);
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+    }
   };
+
+  const handleSaleSelect = (saleName) => {
+    setFormData(prev => ({
+      ...prev,
+      saleName
+    }));
+    setShowSuggestions(false);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSuggestions && !e.target.closest('.relative')) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showSuggestions]);
 
   const handleImageCapture = (file) => {
     setImage(file);
@@ -142,17 +192,43 @@ const CheckInForm = ({ onSuccess }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="relative">
           <label className="label">Tên Sale *</label>
           <input
             type="text"
             name="saleName"
             value={formData.saleName}
             onChange={handleInputChange}
+            onFocus={() => {
+              if (formData.saleName.trim().length > 0 && filteredSales.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
             className="input"
             placeholder="Nguyễn Văn A"
             required
+            autoComplete="off"
           />
+
+          {/* Autocomplete Suggestions */}
+          {showSuggestions && filteredSales.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredSales.map((sale, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleSaleSelect(sale.name)}
+                  className="px-4 py-2 hover:bg-primary hover:text-white cursor-pointer transition-colors"
+                >
+                  <div className="font-medium">{sale.name}</div>
+                  {sale.daysWithoutPSGD && (
+                    <div className="text-xs opacity-75">
+                      {sale.daysWithoutPSGD} ngày chưa PSGD
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
