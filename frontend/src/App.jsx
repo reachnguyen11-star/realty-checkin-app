@@ -61,30 +61,32 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-secondary to-navy text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex flex-col gap-2">
+            {/* Top row: Logo and Title */}
+            <div className="flex items-center gap-2">
               <img
                 src="/logo.svg"
                 alt="Nam An Realty Logo"
-                className="h-12 w-12 object-contain flex-shrink-0"
+                className="h-10 w-10 object-contain flex-shrink-0"
                 onError={(e) => {
                   e.target.style.display = 'none';
                 }}
               />
-              <h1 className="text-lg sm:text-2xl font-bold leading-tight">
-                <span className="text-gold whitespace-nowrap">Nam An Realty</span>
-                <span className="text-gray-300 text-sm sm:text-lg ml-1 sm:ml-2 whitespace-nowrap">- Check-in System</span>
+              <h1 className="text-base sm:text-2xl font-bold leading-tight flex-1">
+                <span className="text-gold">Nam An Realty</span>
+                <span className="text-gray-300 text-xs sm:text-lg ml-1 sm:ml-2 block sm:inline">Check-in System</span>
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-gray-300">Xin chào,</div>
-                <div className="font-bold text-gold">{currentUser?.name}</div>
+            {/* Bottom row: User info and Logout */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm text-gray-300">Xin chào,</span>
+                <span className="text-sm sm:text-base font-bold text-gold">{currentUser?.name}</span>
               </div>
               <button
                 onClick={handleLogout}
-                className="btn btn-secondary text-sm px-3 py-2"
+                className="btn btn-secondary text-xs sm:text-sm px-3 py-1.5"
               >
                 🚪 Đăng xuất
               </button>
