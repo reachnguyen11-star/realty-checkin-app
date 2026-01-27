@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ClipboardCheck, MapPin, CheckCircle } from 'lucide-react';
 import ImageCapture from './ImageCapture';
 import apiService from '../services/api';
 
@@ -177,7 +178,10 @@ const CheckInForm = ({ onSuccess, currentUser }) => {
 
   return (
     <div className="card max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">📝 Check-in Gặp Khách</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+        <ClipboardCheck size={28} className="text-primary" />
+        Check-in Gặp Khách
+      </h2>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
@@ -268,9 +272,10 @@ const CheckInForm = ({ onSuccess, currentUser }) => {
         />
 
         {locationData?.address && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+            <MapPin size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700">
-              <span className="font-semibold">📍 Vị trí:</span> {locationData.address}
+              <span className="font-semibold">Vị trí:</span> {locationData.address}
             </p>
           </div>
         )}
@@ -278,15 +283,19 @@ const CheckInForm = ({ onSuccess, currentUser }) => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full btn btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full btn btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          aria-label="Hoàn tất check-in"
         >
           {loading ? (
-            <span className="flex items-center justify-center">
-              <span className="spinner mr-2"></span>
+            <span className="flex items-center justify-center gap-2">
+              <span className="spinner"></span>
               Đang xử lý...
             </span>
           ) : (
-            '✅ Hoàn Tất Check-in'
+            <>
+              <CheckCircle size={20} />
+              Hoàn Tất Check-in
+            </>
           )}
         </button>
       </form>

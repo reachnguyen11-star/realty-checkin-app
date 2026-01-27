@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { ClipboardList, History as HistoryIcon, BarChart3, Settings, LogOut } from 'lucide-react';
 import CheckInForm from './components/CheckInForm';
 import History from './components/History';
 import Reports from './components/Reports';
@@ -86,9 +87,11 @@ function App() {
               </div>
               <button
                 onClick={handleLogout}
-                className="btn btn-secondary text-xs sm:text-sm px-3 py-1.5"
+                className="btn btn-secondary text-xs sm:text-sm px-3 py-1.5 flex items-center gap-1.5"
+                aria-label="Đăng xuất"
               >
-                🚪 Đăng xuất
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Đăng xuất</span>
               </button>
             </div>
           </div>
@@ -101,44 +104,52 @@ function App() {
           <div className="flex gap-1 sm:gap-4">
             <button
               onClick={() => setActiveTab('checkin')}
-              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'checkin'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
               }`}
+              aria-label="Trang Check-in"
             >
-              📝 Check-in
+              <ClipboardList size={20} />
+              <span>Check-in</span>
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'history'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
               }`}
+              aria-label="Trang lịch sử"
             >
-              📜 Lịch sử
+              <HistoryIcon size={20} />
+              <span>Lịch sử</span>
             </button>
             <button
               onClick={() => setActiveTab('reports')}
-              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
                 activeTab === 'reports'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-600 hover:text-gray-800'
               }`}
+              aria-label="Trang thống kê"
             >
-              📊 Thống kê
+              <BarChart3 size={20} />
+              <span>Thống kê</span>
             </button>
             {currentUser?.role === 'admin' && (
               <button
                 onClick={() => setActiveTab('admin')}
-                className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors ${
+                className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
                   activeTab === 'admin'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-600 hover:text-gray-800'
                 }`}
+                aria-label="Trang quản trị"
               >
-                🔧 Admin
+                <Settings size={20} />
+                <span>Admin</span>
               </button>
             )}
           </div>

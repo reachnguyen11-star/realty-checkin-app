@@ -55,6 +55,22 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .spinner {
+    animation: none;
+    border-top-color: #B8860B;
+  }
+}
+
 /* Button styles - iPhone style */
 .btn {
   @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm;

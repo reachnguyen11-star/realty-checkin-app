@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { History as HistoryIcon, RefreshCw, MapPin, X } from 'lucide-react';
 import apiService from '../services/api';
 
 const History = () => {
@@ -69,6 +70,17 @@ const History = () => {
     return matchSale && matchCustomer;
   });
 
+  // ESC key handler for modal
+  useEffect(() => {
+    const handleEscKey = (e) => {
+      if (e.key === 'Escape' && selectedImage) {
+        setSelectedImage(null);
+      }
+    };
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [selectedImage]);
+
   if (loading && checkins.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -80,12 +92,17 @@ const History = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-800">📜 Lịch Sử Check-in</h2>
+        <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <HistoryIcon size={32} className="text-primary" />
+          Lịch Sử Check-in
+        </h2>
         <button
           onClick={fetchCheckins}
-          className="btn btn-secondary"
+          className="btn btn-secondary flex items-center gap-2"
+          aria-label="Làm mới danh sách"
         >
-          🔄 Làm mới
+          <RefreshCw size={18} />
+          Làm mới
         </button>
       </div>
 
@@ -167,9 +184,10 @@ const History = () => {
                           href={`https://www.google.com/maps?q=${checkin.latitude},${checkin.longitude}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ml-2 text-primary hover:text-gold"
+                          className="ml-2 text-primary hover:text-gold inline-flex items-center"
+                          aria-label="Xem vị trí trên Google Maps"
                         >
-                          🗺️
+                          <MapPin size={16} />
                         </a>
                       )}
                     </td>
@@ -180,6 +198,7 @@ const History = () => {
                           alt="Check-in"
                           className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-75 transition"
                           onClick={() => setSelectedImage(checkin.imageUrl)}
+                          loading="lazy"
                         />
                       ) : (
                         <span className="text-gray-400 text-sm">Không có</span>
@@ -205,14 +224,17 @@ const History = () => {
           <div className="relative max-w-4xl max-h-[90vh]">
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute -top-10 right-0 text-white text-2xl hover:text-gold"
+              className="absolute -top-10 right-0 text-white text-2xl hover:text-gold flex items-center gap-2 transition-colors"
+              aria-label="Đóng hình ảnh"
             >
-              ✕ Đóng
+              <X size={24} />
+              <span className="text-base">Đóng</span>
             </button>
             <img
               src={selectedImage}
               alt="Full size"
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              loading="lazy"
             />
           </div>
         </div>

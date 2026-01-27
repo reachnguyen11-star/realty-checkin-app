@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BarChart3, Calendar, Trophy, Users } from 'lucide-react';
 import apiService from '../services/api';
 
 const PROJECTS = [
@@ -252,7 +253,10 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-800">📊 Thống Kê & Báo Cáo</h2>
+      <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+        <BarChart3 size={32} className="text-primary" />
+        Thống Kê & Báo Cáo
+      </h2>
 
       {/* Filters */}
       <div className="card">
@@ -266,6 +270,7 @@ const Reports = () => {
               setShowCalendar(true);
             }}
             className="p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 hover:border-primary transition-all text-left"
+            aria-label="Chọn khoảng thời gian"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -274,7 +279,7 @@ const Reports = () => {
                   {formatDateDisplay(dateRange.startDate)} - {formatDateDisplay(dateRange.endDate)}
                 </div>
               </div>
-              <div className="text-primary text-xl">📅</div>
+              <Calendar size={24} className="text-primary" />
             </div>
           </button>
 
@@ -340,7 +345,10 @@ const Reports = () => {
 
       {/* Top 10 Sales */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">🏆 Top 10 Sale gặp khách nhiều nhất</h3>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Trophy size={24} className="text-yellow-500" />
+          Top 10 Sale gặp khách nhiều nhất
+        </h3>
         {top10Sales.length === 0 ? (
           <p className="text-gray-500 text-center py-8">Không có dữ liệu</p>
         ) : (
@@ -348,12 +356,17 @@ const Reports = () => {
             {top10Sales.map(([name, count], index) => {
               const maxTopCount = top10Sales[0][1];
               const percentage = (count / maxTopCount) * 100;
-              const medals = ['🥇', '🥈', '🥉'];
-              const medal = medals[index] || `${index + 1}.`;
+              const rankDisplay = index < 3 ?
+                <Trophy size={24} className={
+                  index === 0 ? 'text-yellow-500' :
+                  index === 1 ? 'text-gray-400' :
+                  'text-orange-500'
+                } /> :
+                <span className="text-gray-600 font-bold">{index + 1}.</span>;
 
               return (
                 <div key={name} className="flex items-center gap-3">
-                  <div className="text-2xl w-10">{medal}</div>
+                  <div className="w-10 flex items-center justify-center">{rankDisplay}</div>
                   <div className="w-40 font-medium text-gray-800">{name}</div>
                   <div className="flex-1 bg-gray-100 rounded-full h-12 relative overflow-hidden">
                     <div
@@ -382,7 +395,10 @@ const Reports = () => {
 
       {/* Sales List with Days Without PSGD */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">👥 Danh sách Sales - Số ngày chưa PSGD</h3>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Users size={24} className="text-primary" />
+          Danh sách Sales - Số ngày chưa PSGD
+        </h3>
         {salesList.length === 0 ? (
           <p className="text-gray-500 text-center py-8">Đang tải danh sách...</p>
         ) : (

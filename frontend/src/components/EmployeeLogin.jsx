@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Building2, LogIn } from 'lucide-react';
 import apiService from '../services/api';
 
 const EmployeeLogin = ({ onLoginSuccess }) => {
@@ -40,7 +41,9 @@ const EmployeeLogin = ({ onLoginSuccess }) => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-gold/10 p-4">
       <div className="card max-w-md w-full">
         <div className="text-center mb-6">
-          <div className="text-6xl mb-4">🏢</div>
+          <div className="flex justify-center mb-4">
+            <Building2 size={64} className="text-primary" />
+          </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Nam An Realty</h2>
           <p className="text-gray-600">Hệ thống Check-in</p>
         </div>
@@ -82,15 +85,19 @@ const EmployeeLogin = ({ onLoginSuccess }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn btn-primary text-lg py-3 disabled:opacity-50"
+            className="w-full btn btn-primary text-lg py-3 disabled:opacity-50 flex items-center justify-center gap-2"
+            aria-label="Đăng nhập hệ thống"
           >
             {loading ? (
-              <span className="flex items-center justify-center">
-                <span className="spinner mr-2"></span>
+              <span className="flex items-center justify-center gap-2">
+                <span className="spinner"></span>
                 Đang đăng nhập...
               </span>
             ) : (
-              '🔓 Đăng nhập'
+              <>
+                <LogIn size={20} />
+                Đăng nhập
+              </>
             )}
           </button>
         </form>
