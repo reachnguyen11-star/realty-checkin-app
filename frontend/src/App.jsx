@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ClipboardList, History as HistoryIcon, BarChart3, Settings, LogOut } from 'lucide-react';
+import { ClipboardList, History as HistoryIcon, BarChart3, LogOut } from 'lucide-react';
 import CheckInForm from './components/CheckInForm';
 import History from './components/History';
 import Reports from './components/Reports';
@@ -138,20 +138,6 @@ function App() {
               <BarChart3 size={20} />
               <span>Thống kê</span>
             </button>
-            {currentUser?.role === 'admin' && (
-              <button
-                onClick={() => setActiveTab('admin')}
-                className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
-                  activeTab === 'admin'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-600 hover:text-gray-800'
-                }`}
-                aria-label="Trang quản trị"
-              >
-                <Settings size={20} />
-                <span>Admin</span>
-              </button>
-            )}
           </div>
         </div>
       </nav>
