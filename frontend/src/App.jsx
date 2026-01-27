@@ -153,7 +153,7 @@ function App() {
             }}
           />
         )}
-        {activeTab === 'history' && <History />}
+        {activeTab === 'history' && <History currentUser={currentUser} />}
         {activeTab === 'reports' && <Reports />}
         {activeTab === 'admin' && <Admin />}
       </main>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { History as HistoryIcon, RefreshCw, MapPin, X } from 'lucide-react';
+import { History as HistoryIcon, RefreshCw, MapPin, X, Trash2 } from 'lucide-react';
 import apiService from '../services/api';
 
-const History = () => {
+const History = ({ currentUser }) => {
   const [checkins, setCheckins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({
@@ -27,6 +27,26 @@ const History = () => {
       console.error('Fetch error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
+      return;
+    }
+
+    try {
+      const result = await apiService.deleteCheckIn(id);
+      if (result.success) {
+        // Refresh the list
+        fetchCheckins();
+        alert('Đã xóa thành công!');
+      } else {
+        alert('Không thể xóa: ' + (result.error || 'Lỗi không xác định'));
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Có lỗi xảy ra khi xóa');
     }
   };
 
@@ -163,6 +183,11 @@ const History = () => {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                     Ghi chú
                   </th>
+                  {currentUser?.role === 'admin' && (
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Thao tác
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -207,6 +232,17 @@ const History = () => {
                     <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
                       {checkin.notes || '-'}
                     </td>
+                    {currentUser?.role === 'admin' && (
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleDelete(checkin.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                          aria-label="Xóa bản ghi"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
