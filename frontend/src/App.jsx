@@ -126,18 +126,20 @@ function App() {
               <HistoryIcon size={20} />
               <span>Lịch sử</span>
             </button>
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
-                activeTab === 'reports'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-              aria-label="Trang thống kê"
-            >
-              <BarChart3 size={20} />
-              <span>Thống kê</span>
-            </button>
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`flex-1 sm:flex-none px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
+                  activeTab === 'reports'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                }`}
+                aria-label="Trang thống kê"
+              >
+                <BarChart3 size={20} />
+                <span>Thống kê</span>
+              </button>
+            )}
           </div>
         </div>
       </nav>
